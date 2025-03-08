@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Supabase CLI初期設定
+下記を参考にinstall
+[pnpm install -g supabase](https://supabase.com/docs/guides/local-development/cli/getting-started#updating-the-supabase-cli)
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+プロジェクトの初期化
+```
+supabase init
+```
+Supabaseにログイン
+```
+supabase login
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Supabaseプロジェクトにリンク
+```
+supabase link --project-ref tiehokjlugmvrleyeifp
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## マイグレーションのやり方
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ローカル開発環境を起動
+```
+supabase start
+```
 
-## Learn More
+※エラーになる場合は下記を実行
+エラー内容
+```
+failed to pull docker image: Error response from daemon: pull access denied for public.ecr.aws/supabase/postgres, repository does not exist or may require 'docker login': denied: Your authorization token has expired. Reauthenticate and try again.
+```
+```
+docker logout public.ecr.aws
+```
 
-To learn more about Next.js, take a look at the following resources:
+エラー内容
+```
+failed to start docker container: Error response from daemon: driver failed programming external connectivity on endpoint supabase_db_fitness-trainer-search (0a54b69b2e0c643f3fd4297e5436151a4d83048d5256d42f3802b40bf665dea4): Bind for 0.0.0.0:54322 failed: port is already allocated
+```
+```
+すでに同じポートで起動しているdockerイメージを削除して再度supabase start。
+docker ps -a | grep supabase
+docker stop bfa7a5673bc0 cea21c98754e
+docker rm bfa7a5673bc0 cea21c98754e
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+マイグレーションファイルの作成
+```
+supabase migration new create_trainers_tables // テーブル定義例
+supabase migration new seed_trainers_data // シード例
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+マイグレーションの実行
+```
+supabase migration up
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+大体Studio URLは下記になるので、ここでデータ状況を確認する。
+```
+http://127.0.0.1:54323
+```
