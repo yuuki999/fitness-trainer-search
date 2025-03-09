@@ -58,3 +58,9 @@ supabase migration up
 ```
 http://127.0.0.1:54323
 ```
+
+
+## 技術的な補足
+
+ダミー人間の画像を使えるAPI
+https://randomuser.me/

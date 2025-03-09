@@ -1,6 +1,6 @@
-// components/TrainerTable.tsx
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Trainer } from '../types';
 
 // SNSアイコンコンポーネントのプロップスインターフェース
@@ -26,7 +26,7 @@ const SnsIcon: React.FC<SnsIconProps> = ({ type }) => {
 
 // トレーナーテーブルのプロップスインターフェース
 interface TrainerTableProps {
-  trainers?: Trainer[]; // オプショナルに変更
+  trainers?: Trainer[];
   onSelect?: (trainerId: number, isSelected: boolean) => void;
 }
 
@@ -63,60 +63,76 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
         <tbody className="bg-white divide-y divide-gray-200">
           {trainers && trainers.length > 0 ? (
             trainers.map((trainer) => (
-              <tr key={trainer.id} className="hover:bg-gray-50">
+              <tr key={trainer.id} className="hover:bg-gray-50 group">
                 <td className="p-4">
                   <input 
                     type="checkbox" 
                     className="rounded" 
-                    onChange={(e) => onSelect && onSelect(trainer.id, e.target.checked)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onSelect && onSelect(trainer.id, e.target.checked);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </td>
                 <td className="p-4">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 flex-shrink-0 relative rounded-full overflow-hidden">
-                      <Image
-                        src={trainer.profileImg}
-                        alt={trainer.name}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">{trainer.name}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="flex space-x-1">
-                    {trainer.sns.map((sns, index) => (
-                      <SnsIcon key={index} type={sns} />
-                    ))}
-                  </div>
-                </td>
-                <td className="p-4 text-sm text-gray-700">
-                  {trainer.profile}
-                </td>
-                <td className="p-4 text-sm text-gray-700">
-                  {trainer.followers.toLocaleString()}
-                </td>
-                <td className="p-4 text-sm text-gray-700">
-                  {trainer.engagementRate}%
-                </td>
-                <td className="p-4">
-                  <div className="flex space-x-1">
-                    {trainer.recentPosts.map((post, index) => (
-                      <div key={index} className="h-10 w-10 relative rounded overflow-hidden">
+                  <Link href={`/trainers/${trainer.id}`} className="block">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 flex-shrink-0 relative rounded-full overflow-hidden">
                         <Image
-                          src={post}
-                          alt="投稿"
+                          src={trainer.profileImg}
+                          alt={trainer.name}
                           fill
                           sizes="40px"
                           className="object-cover"
                         />
                       </div>
-                    ))}
-                  </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600">{trainer.name}</p>
+                      </div>
+                    </div>
+                  </Link>
+                </td>
+                <td className="p-4">
+                  <Link href={`/trainers/${trainer.id}`} className="block">
+                    <div className="flex space-x-1">
+                      {trainer.sns.map((sns, index) => (
+                        <SnsIcon key={index} type={sns} />
+                      ))}
+                    </div>
+                  </Link>
+                </td>
+                <td className="p-4 text-sm text-gray-700">
+                  <Link href={`/trainers/${trainer.id}`} className="block truncate max-w-xs">
+                    {trainer.profile}
+                  </Link>
+                </td>
+                <td className="p-4 text-sm text-gray-700">
+                  <Link href={`/trainers/${trainer.id}`} className="block">
+                    {trainer.followers.toLocaleString()}
+                  </Link>
+                </td>
+                <td className="p-4 text-sm text-gray-700">
+                  <Link href={`/trainers/${trainer.id}`} className="block">
+                    {trainer.engagementRate}%
+                  </Link>
+                </td>
+                <td className="p-4">
+                  <Link href={`/trainers/${trainer.id}`} className="block">
+                    <div className="flex space-x-1">
+                      {trainer.recentPosts.map((post, index) => (
+                        <div key={index} className="h-10 w-10 relative rounded overflow-hidden">
+                          <Image
+                            src={post}
+                            alt="投稿"
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </Link>
                 </td>
               </tr>
             ))

@@ -5,8 +5,8 @@ import Head from 'next/head';
 import { NextPage } from 'next';
 import Sidebar from './components/Sidebar';
 import TrainerTable from './components/TrainerTable';
-import { Trainer, Filters, SnsType } from './types';
-import { getTrainers, searchTrainersByKeyword, getTrainersBySns, searchTrainersComplex } from './services/apiService';
+import { Filters, SnsType, Trainer } from './types';
+import { getTrainers, searchTrainersComplex } from './services';
 
 const Home: NextPage = () => {
   // トレーナーデータの状態

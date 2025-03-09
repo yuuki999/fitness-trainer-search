@@ -1,6 +1,6 @@
 // src/app/api/trainers/sns/route.ts
+import { Trainer } from '@/app/types';
 import { NextRequest, NextResponse } from 'next/server';
-import { Trainer } from '../../../types';
 
 // サンプルデータ（実際のプロジェクトでは共通のデータソースを使用）
 const SAMPLE_TRAINERS: Trainer[] = [

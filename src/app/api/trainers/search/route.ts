@@ -1,6 +1,5 @@
-// src/app/api/trainers/search/route.ts
+import { Trainer } from '@/app/types';
 import { NextRequest, NextResponse } from 'next/server';
-import { Trainer } from '../../../types';
 
 // サンプルデータを別ファイルからインポート
 // 実際のアプリでは下記のパスを調整してください

@@ -1,5 +1,4 @@
-// src/data/sampleData.ts
-import { Trainer } from '@/types';
+import { Trainer } from "../types";
 
 // サンプルデータ（実際の実装ではデータベースから取得）
 export const SAMPLE_TRAINERS: Trainer[] = [
