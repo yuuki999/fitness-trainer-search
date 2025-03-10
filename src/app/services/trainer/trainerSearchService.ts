@@ -9,7 +9,8 @@ import { getTrainers } from './trainerService';
 export const searchTrainersByKeyword = async (keyword: string): Promise<Trainer[]> => {
   try {
     if (!keyword.trim()) {
-      return getTrainers();
+      const result = await getTrainers();
+      return result.trainers;
     }
     
     const { data, error } = await supabase
@@ -42,7 +43,8 @@ export const searchTrainersByKeyword = async (keyword: string): Promise<Trainer[
 export const getTrainersBySns = async (snsTypes: string[]): Promise<Trainer[]> => {
   try {
     if (snsTypes.length === 0) {
-      return getTrainers();
+      const result = await getTrainers();
+      return result.trainers;
     }
 
     // 指定されたSNSを持つトレーナーのIDを取得
@@ -91,62 +93,81 @@ export const getTrainersBySns = async (snsTypes: string[]): Promise<Trainer[]> =
 export const searchTrainersComplex = async (
   keyword?: string,
   snsTypes?: SnsType[],
-  filters?: Partial<Filters>
-): Promise<Trainer[]> => {
+  filters?: Partial<Filters>,
+  page: number = 1,
+  itemsPerPage: number = 10
+): Promise<{ trainers: Trainer[], total: number }> => {
   try {
-    // キーワードがある場合のトレーナー検索
-    let trainers: Trainer[] = [];
+    // ベースクエリのセットアップ
+    let query = supabase
+      .from('trainers')
+      .select(`
+        *,
+        area:area_id(id, name)
+      `, { count: 'exact' });
     
+    // フィルターの追加
     if (keyword && keyword.trim() !== '') {
-      trainers = await searchTrainersByKeyword(keyword);
-    } else {
-      // フィルターによるトレーナー検索
-      let query = supabase
-        .from('trainers')
-        .select(`
-          *,
-          area:area_id(id, name)
-        `);
-      
-      if (filters) {
-        if (filters.followers !== undefined) {
-          query = query.gte('followers', filters.followers);
-        }
-        
-        if (filters.engagementRate !== undefined) {
-          query = query.gte('engagement_rate', filters.engagementRate);
-        }
-        
-        if (filters.area_id !== undefined && filters.area_id !== null) {
-          query = query.eq('area_id', filters.area_id);
-        }
+      query = query.or(`name.ilike.%${keyword}%,profile.ilike.%${keyword}%`);
+    }
+    
+    if (filters) {
+      if (filters.followers !== undefined) {
+        query = query.gte('followers', filters.followers);
       }
       
-      const { data, error } = await query;
-      if (error) throw error;
+      if (filters.engagementRate !== undefined) {
+        query = query.gte('engagement_rate', filters.engagementRate);
+      }
       
-      // エリア情報をフォーマット
-      const formattedData = data?.map(trainer => ({
-        ...trainer,
-        area: trainer.area ? trainer.area.name : null,
-        area_id: trainer.area_id
-      }));
-      
-      trainers = await formatTrainerData(formattedData as TrainerRecord[] || []);
+      if (filters.area_id !== undefined && filters.area_id !== null) {
+        query = query.eq('area_id', filters.area_id);
+      }
     }
+
+    // まず総数を取得
+    // const { count: totalCount } = await query;
     
-    // SNSフィルタリング
+    // ページネーションの計算
+    const from = (page - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
+    
+    // ページ分けされたクエリを実行
+    const { data, error, count } = await query.range(from, to);
+    
+    if (error) throw error;
+    
+    // トレーナーデータのフォーマット
+    const formattedData = data?.map(trainer => ({
+      ...trainer,
+      area: trainer.area ? trainer.area.name : null,
+      area_id: trainer.area_id
+    }));
+    
+    let trainers = await formatTrainerData(formattedData as TrainerRecord[] || []);
+    
+    // 必要に応じてSNSフィルタリングを適用
     if (snsTypes && snsTypes.length > 0) {
-      const snsByTrainers = await getTrainersBySns(snsTypes);
-      const snsByTrainerIds = snsByTrainers.map(t => t.id);
+      // 指定されたSNSタイプを持つトレーナーを取得
+      const { data: snsData } = await supabase
+        .from('trainer_sns')
+        .select('trainer_id')
+        .in('sns_type', snsTypes);
       
-      // 両方の結果の交差
-      trainers = trainers.filter(trainer => snsByTrainerIds.includes(trainer.id));
+      if (snsData && snsData.length > 0) {
+        const trainerIdsWithSns = [...new Set(snsData.map(item => item.trainer_id))];
+        trainers = trainers.filter(trainer => trainerIdsWithSns.includes(trainer.id));
+      } else {
+        trainers = [];
+      }
     }
     
-    return trainers;
+    return {
+      trainers: trainers,
+      total: count || 0
+    };
   } catch (error) {
-    console.error('Error in complex search:', error);
+    console.error('複合検索エラー:', error);
     throw error;
   }
 };

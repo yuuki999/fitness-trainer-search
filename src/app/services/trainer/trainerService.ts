@@ -1,38 +1,52 @@
 import { supabase } from '../supabase/client';
-import { Trainer, TrainerRecord, Filters } from '../../types';
+import { Trainer, TrainerRecord } from '../../types';
 import { formatTrainerData } from './trainerUtils';
 
 /**
  * すべてのトレーナーデータを取得する
  */
-export const getTrainers = async (filters?: Partial<Filters>): Promise<Trainer[]> => {
+export const getTrainers = async (
+  page: number = 1,
+  itemsPerPage: number = 10
+): Promise<{ trainers: Trainer[], total: number }> => {
   try {
-    let query = supabase
+    // まず総数を取得
+    const { count, error: countError } = await supabase
       .from('trainers')
-      .select('*');
+      .select('*', { count: 'exact', head: true });
 
-    // フィルター適用
-    if (filters) {
-      if (filters.followers !== undefined) {
-        query = query.gte('followers', filters.followers);
-      }
-      
-      if (filters.engagementRate !== undefined) {
-        query = query.gte('engagement_rate', filters.engagementRate);
-      }
-      
-      if (filters.area && filters.area !== '') {
-        query = query.eq('area', filters.area);
-      }
-    }
+    if (countError) throw countError;
 
-    const { data, error } = await query;
+    // ページネーションの計算
+    const from = (page - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
+
+    // ページ分けされたデータを取得
+    const { data, error } = await supabase
+      .from('trainers')
+      .select(`
+        *,
+        area:area_id(id, name)
+      `)
+      .range(from, to);
 
     if (error) throw error;
 
-    return await formatTrainerData(data as TrainerRecord[] || []);
+    // エリア情報をフォーマット
+    const formattedData = data?.map(trainer => ({
+      ...trainer,
+      area: trainer.area ? trainer.area.name : null,
+      area_id: trainer.area_id
+    }));
+
+    const formattedTrainers = await formatTrainerData(formattedData as TrainerRecord[] || []);
+    
+    return {
+      trainers: formattedTrainers,
+      total: count || 0
+    };
   } catch (error) {
-    console.error('Error fetching trainers:', error);
+    console.error('トレーナーデータの取得エラー:', error);
     throw error;
   }
 };
