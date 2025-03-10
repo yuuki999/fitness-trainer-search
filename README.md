@@ -54,6 +54,11 @@ supabase migration new seed_trainers_data // シード例
 supabase migration up
 ```
 
+リセットして最初からマイグレーション実行
+```
+supabase db reset
+```
+
 大体Studio URLは下記になるので、ここでデータ状況を確認する。
 ```
 http://127.0.0.1:54323

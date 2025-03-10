@@ -1,5 +1,5 @@
 // SNSの種類を定義
-export type SnsType = 'Instagram' | 'YouTube' | 'TikTok';
+export type SnsType = 'Instagram' | 'YouTube' | 'TikTok' | 'X';
 
 // SNSアカウントのインターフェース
 export interface SnsAccount {

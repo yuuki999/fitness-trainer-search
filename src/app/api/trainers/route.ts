@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
     
     // パラメータを取得
     const followers = searchParams.get('followers');
-    const engagementRate = searchParams.get('engagementRate');
     const area = searchParams.get('area');
     const keyword = searchParams.get('keyword');
     const snsParams = searchParams.getAll('sns');
@@ -60,12 +59,6 @@ export async function GET(request: NextRequest) {
     if (followers && !isNaN(Number(followers))) {
       query = query.gte('followers', Number(followers));
     }
-
-    // エンゲージメント率でフィルタリング
-    if (engagementRate && !isNaN(Number(engagementRate))) {
-      query = query.gte('engagement_rate', Number(engagementRate));
-    }
-
     // エリアでフィルタリング
     if (area && area !== '') {
       query = query.eq('area', area);

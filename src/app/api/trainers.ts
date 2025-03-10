@@ -98,7 +98,6 @@ export default async function handler(
     // クエリパラメータを取得
     const {
       followers,
-      engagementRate,
       area,
       keyword,
       sns
@@ -112,14 +111,6 @@ export default async function handler(
       const minFollowers = Number(followers);
       filteredTrainers = filteredTrainers.filter(trainer => 
         trainer.followers >= minFollowers
-      );
-    }
-
-    // エンゲージメント率でフィルタリング
-    if (engagementRate && !isNaN(Number(engagementRate))) {
-      const minEngagementRate = Number(engagementRate);
-      filteredTrainers = filteredTrainers.filter(trainer => 
-        trainer.engagementRate >= minEngagementRate
       );
     }
 

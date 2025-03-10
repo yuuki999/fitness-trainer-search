@@ -1,33 +1,37 @@
+import { TrainerPost } from "./post";
+import { SnsType } from "./sns";
+
 // トレーナーインターフェース
 export interface Trainer {
   id: number;
   name: string;
   profileImg: string;
-  sns: string[];
   profile: string;
   followers: number;
   engagementRate: number;
-  area: string;
-  recentPosts: string[];
+  area: string | null; // エリア名（表示用）
+  area_id: number | null; // エリアID（検索用）
+  sns: SnsType[];
+  posts: TrainerPost[];
 }
+
 
 // トレーナーのレコード型（Supabaseの戻り値用）
 export interface TrainerRecord {
   id: number;
   name: string;
-  profile_img: string | null;
-  profile: string | null;
+  profile_img: string;
+  profile: string;
   followers: number;
   engagement_rate: number;
-  area: string | null;
+  area: string | null; // 表示用のエリア名
+  area_id: number | null; // 検索用のエリアID
+  created_at: string;
 }
-
 // フィルターインターフェース
 export interface Filters {
   followers: number;
   engagementRate: number;
-  area: string;
+  area_id: number | null;
 }
 
-// エリアの種類を定義
-export type AreaType = '東京' | '大阪' | '名古屋' | '福岡' | '札幌' | '';

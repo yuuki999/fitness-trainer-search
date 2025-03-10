@@ -1,25 +1,39 @@
+import { Trainer, TrainerRecord, SnsAccount, TrainerPost, PostRecord } from '@/app/types';
 import { supabase } from '../supabase/client';
-import { Trainer, TrainerRecord, SnsAccount } from '../../types';
 import { formatTrainerData } from './trainerUtils';
 
 /**
- * トレーナーの詳細情報とSNSアカウント情報を取得する
+ * トレーナー詳細情報を取得する
  */
 export const getTrainerDetail = async (id: number): Promise<Trainer | null> => {
   try {
+    // トレーナー情報取得（エリア情報も結合して取得）
     const { data, error } = await supabase
       .from('trainers')
-      .select('*')
+      .select(`
+        *,
+        area:area_id(id, name)
+      `)
       .eq('id', id)
       .single();
-
+    
     if (error) throw error;
+    
     if (!data) return null;
-
-    const formattedTrainer = await formatTrainerData([data as TrainerRecord]);
-    return formattedTrainer[0] || null;
+    
+    // エリア情報をフォーマット
+    const formattedData = {
+      ...data,
+      area: data.area ? data.area.name : null,
+      area_id: data.area_id
+    };
+    
+    // トレーナー情報をフォーマット
+    const trainers = await formatTrainerData([formattedData] as TrainerRecord[]);
+    return trainers[0] || null;
+    
   } catch (error) {
-    console.error(`Failed to fetch trainer details with ID ${id}:`, error);
+    console.error(`Error fetching trainer details for ID ${id}:`, error);
     throw error;
   }
 };
@@ -31,19 +45,20 @@ export const getTrainerSnsAccounts = async (trainerId: number): Promise<SnsAccou
   try {
     const { data, error } = await supabase
       .from('trainer_sns')
-      .select('sns_type')
+      .select('*')
       .eq('trainer_id', trainerId);
-
+    
     if (error) throw error;
-
-    // SNSデータから実際のアカウント情報を生成
-    // 注: ここでは実際のusernameデータがないため、仮のユーザー名を設定
-    return (data || []).map(item => ({
-      type: item.sns_type as any, // 適切な型変換が必要
-      username: `${item.sns_type.toLowerCase()}_user_${trainerId}` // 実際のデータに合わせて変更
+    
+    // SNSアカウント情報をフォーマット
+    return (data || []).map(sns => ({
+      id: sns.id,
+      type: sns.sns_type,
+      username: sns.username || '' // usernameカラムが存在する場合
     }));
+    
   } catch (error) {
-    console.error(`Failed to fetch SNS accounts for trainer with ID ${trainerId}:`, error);
-    return [];
+    console.error(`Error fetching SNS accounts for trainer ID ${trainerId}:`, error);
+    throw error;
   }
 };

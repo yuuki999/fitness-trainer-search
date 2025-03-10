@@ -2,27 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trainer } from '../types';
-
-// SNSアイコンコンポーネントのプロップスインターフェース
-interface SnsIconProps {
-  type: string;
-}
-
-// SNSアイコンコンポーネント
-const SnsIcon: React.FC<SnsIconProps> = ({ type }) => {
-  const baseClasses = "text-xs px-1 py-0.5 rounded text-white font-medium";
-  
-  switch (type) {
-    case 'Instagram':
-      return <span className={`${baseClasses} bg-gradient-to-r from-purple-500 via-pink-500 to-red-500`}>IG</span>;
-    case 'YouTube':
-      return <span className={`${baseClasses} bg-red-600`}>YT</span>;
-    case 'TikTok':
-      return <span className={`${baseClasses} bg-black`}>TT</span>;
-    default:
-      return null;
-  }
-};
+import SnsIcon from './common/SnsIcon';
 
 // トレーナーテーブルのプロップスインターフェース
 interface TrainerTableProps {
@@ -37,9 +17,9 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="p-4 text-left">
+            {/* <th className="p-4 text-left">
               <input type="checkbox" className="rounded" />
-            </th>
+            </th> */}
             <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               アカウント名
             </th>
@@ -53,9 +33,6 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
               フォロワー数
             </th>
             <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              平均ER
-            </th>
-            <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               最近の投稿
             </th>
           </tr>
@@ -64,17 +41,6 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
           {trainers && trainers.length > 0 ? (
             trainers.map((trainer) => (
               <tr key={trainer.id} className="hover:bg-gray-50 group">
-                <td className="p-4">
-                  <input 
-                    type="checkbox" 
-                    className="rounded" 
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onSelect && onSelect(trainer.id, e.target.checked);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </td>
                 <td className="p-4">
                   <Link href={`/trainers/${trainer.id}`} className="block">
                     <div className="flex items-center">
@@ -97,7 +63,7 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
                   <Link href={`/trainers/${trainer.id}`} className="block">
                     <div className="flex space-x-1">
                       {trainer.sns.map((sns, index) => (
-                        <SnsIcon key={index} type={sns} />
+                        <SnsIcon key={index} type={sns} size="sm" />
                       ))}
                     </div>
                   </Link>
@@ -110,11 +76,6 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
                 <td className="p-4 text-sm text-gray-700">
                   <Link href={`/trainers/${trainer.id}`} className="block">
                     {trainer.followers.toLocaleString()}
-                  </Link>
-                </td>
-                <td className="p-4 text-sm text-gray-700">
-                  <Link href={`/trainers/${trainer.id}`} className="block">
-                    {trainer.engagementRate}%
                   </Link>
                 </td>
                 <td className="p-4">

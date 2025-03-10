@@ -14,12 +14,22 @@ export const searchTrainersByKeyword = async (keyword: string): Promise<Trainer[
     
     const { data, error } = await supabase
       .from('trainers')
-      .select('*')
+      .select(`
+        *,
+        area:area_id(id, name)
+      `)
       .or(`name.ilike.%${keyword}%,profile.ilike.%${keyword}%`);
 
     if (error) throw error;
 
-    return await formatTrainerData(data as TrainerRecord[] || []);
+    // エリア情報をフォーマット
+    const formattedData = data?.map(trainer => ({
+      ...trainer,
+      area: trainer.area ? trainer.area.name : null,
+      area_id: trainer.area_id
+    }));
+
+    return await formatTrainerData(formattedData as TrainerRecord[] || []);
   } catch (error) {
     console.error('Error searching trainers:', error);
     throw error;
@@ -50,15 +60,25 @@ export const getTrainersBySns = async (snsTypes: string[]): Promise<Trainer[]> =
     // 重複を排除したトレーナーIDのリスト
     const trainerIds = [...new Set(snsData.map(item => item.trainer_id as number))];
 
-    // トレーナーデータを取得
+    // トレーナーデータを取得（エリア情報も含める）
     const { data: trainersData, error: trainersError } = await supabase
       .from('trainers')
-      .select('*')
+      .select(`
+        *,
+        area:area_id(id, name)
+      `)
       .in('id', trainerIds);
 
     if (trainersError) throw trainersError;
 
-    return await formatTrainerData(trainersData as TrainerRecord[] || []);
+    // エリア情報をフォーマット
+    const formattedData = trainersData?.map(trainer => ({
+      ...trainer,
+      area: trainer.area ? trainer.area.name : null,
+      area_id: trainer.area_id
+    }));
+
+    return await formatTrainerData(formattedData as TrainerRecord[] || []);
   } catch (error) {
     console.error('Error fetching trainers by SNS:', error);
     throw error;
@@ -81,7 +101,12 @@ export const searchTrainersComplex = async (
       trainers = await searchTrainersByKeyword(keyword);
     } else {
       // フィルターによるトレーナー検索
-      let query = supabase.from('trainers').select('*');
+      let query = supabase
+        .from('trainers')
+        .select(`
+          *,
+          area:area_id(id, name)
+        `);
       
       if (filters) {
         if (filters.followers !== undefined) {
@@ -92,15 +117,22 @@ export const searchTrainersComplex = async (
           query = query.gte('engagement_rate', filters.engagementRate);
         }
         
-        if (filters.area && filters.area !== '') {
-          query = query.eq('area', filters.area);
+        if (filters.area_id !== undefined && filters.area_id !== null) {
+          query = query.eq('area_id', filters.area_id);
         }
       }
       
       const { data, error } = await query;
       if (error) throw error;
       
-      trainers = await formatTrainerData(data as TrainerRecord[] || []);
+      // エリア情報をフォーマット
+      const formattedData = data?.map(trainer => ({
+        ...trainer,
+        area: trainer.area ? trainer.area.name : null,
+        area_id: trainer.area_id
+      }));
+      
+      trainers = await formatTrainerData(formattedData as TrainerRecord[] || []);
     }
     
     // SNSフィルタリング

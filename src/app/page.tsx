@@ -18,7 +18,7 @@ const Home: NextPage = () => {
   const [filters, setFilters] = useState<Filters>({
     followers: 0,
     engagementRate: 0,
-    area: '',
+    area_id: null,
   });
   
   // 選択されたSNS
@@ -95,7 +95,7 @@ const Home: NextPage = () => {
     setFilters({
       followers: 0,
       engagementRate: 0,
-      area: '',
+      area_id: null,
     });
     setSelectedSns([]);
     setSearchKeyword('');
@@ -150,19 +150,6 @@ const Home: NextPage = () => {
           <div className="flex-1 p-6 bg-gray-100 overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-medium text-gray-800">フィットネストレーナー検索</h2>
-              <div className="flex items-center">
-                {selectedTrainerIds.length > 0 && (
-                  <span className="mr-4 text-sm text-gray-600">
-                    {selectedTrainerIds.length}件選択中
-                  </span>
-                )}
-                <button className="px-4 py-2 bg-white border border-gray-300 rounded shadow-sm text-sm flex items-center">
-                  表示項目
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
             </div>
             
             {error && (
