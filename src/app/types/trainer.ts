@@ -13,6 +13,7 @@ export interface Trainer {
   area_id: number | null; // エリアID（検索用）
   sns: SnsType[];
   posts: TrainerPost[];
+  recentPosts: string[]; // 最近の投稿画像URL
 }
 
 

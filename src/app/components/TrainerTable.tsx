@@ -1,8 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trainer } from '../types';
 import SnsIcon from './common/SnsIcon';
+
+// ダミー画像にはデータ URL を使用する
+const DUMMY_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI0VBRUFFQSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk5vIFByb2ZpbGUgSW1hZ2U8L3RleHQ+PC9zdmc+';
+const DUMMY_POST_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI0VBRUFFQSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk5vIFBvc3QgSW1hZ2U8L3RleHQ+PC9zdmc+';
+
+// 画像コンポーネントをカスタマイズしてエラーハンドリングを追加
+const ProfileImage = ({ src, alt }: { src: string, alt: string }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  return (
+    <Image
+      src={hasError ? DUMMY_PROFILE_IMAGE : src}
+      alt={alt}
+      fill
+      sizes="40px"
+      className="object-cover"
+      onError={() => {
+        setHasError(true);
+      }}
+      unoptimized={hasError} // ダミー画像の場合は最適化をスキップ
+    />
+  );
+};
+
+const PostImage = ({ src, alt }: { src: string, alt: string }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  return (
+    <Image
+      src={hasError ? DUMMY_POST_IMAGE : src}
+      alt={alt}
+      fill
+      sizes="40px"
+      className="object-cover"
+      onError={() => {
+        setHasError(true);
+      }}
+      unoptimized={hasError} // ダミー画像の場合は最適化をスキップ
+    />
+  );
+};
 
 // トレーナーテーブルのプロップスインターフェース
 interface TrainerTableProps {
@@ -45,12 +86,9 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
                   <Link href={`/trainers/${trainer.id}`} className="block">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0 relative rounded-full overflow-hidden">
-                        <Image
-                          src={trainer.profileImg}
-                          alt={trainer.name}
-                          fill
-                          sizes="40px"
-                          className="object-cover"
+                        <ProfileImage 
+                          src={trainer.profileImg} 
+                          alt={trainer.name} 
                         />
                       </div>
                       <div className="ml-3">
@@ -83,12 +121,9 @@ const TrainerTable: React.FC<TrainerTableProps> = ({ trainers = [], onSelect }) 
                     <div className="flex space-x-1">
                       {trainer.recentPosts.map((post, index) => (
                         <div key={index} className="h-10 w-10 relative rounded overflow-hidden">
-                          <Image
-                            src={post}
-                            alt="投稿"
-                            fill
-                            sizes="40px"
-                            className="object-cover"
+                          <PostImage 
+                            src={post} 
+                            alt="投稿" 
                           />
                         </div>
                       ))}
